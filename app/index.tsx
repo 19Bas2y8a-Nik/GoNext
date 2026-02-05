@@ -1,49 +1,51 @@
-import { useState } from 'react';
+import { useRouter, type Href } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
-import { Appbar, Button, Snackbar, Text } from 'react-native-paper';
+import { Appbar, Button, Text } from 'react-native-paper';
 
 export default function HomeScreen() {
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-
-  const showSnackbar = () => setSnackbarVisible(true);
-  const hideSnackbar = () => setSnackbarVisible(false);
+  const router = useRouter();
 
   return (
     <>
       <Appbar.Header>
         <Appbar.Content title="GoNext" />
       </Appbar.Header>
-      <View style={styles.center}>
-        <Text variant="titleLarge" style={styles.text}>
-          Привет, турист!
+      <View style={styles.container}>
+        <Text variant="headlineMedium" style={styles.title}>
+          Дневник туриста
         </Text>
-        <Button mode="contained" onPress={showSnackbar} style={styles.button}>
-          Нажми меня
-        </Button>
+        <View style={styles.buttons}>
+          <Button mode="contained" onPress={() => router.push('/places' as Href)} style={styles.button}>
+            Места
+          </Button>
+          <Button mode="contained" onPress={() => router.push('/trips' as Href)} style={styles.button}>
+            Поездки
+          </Button>
+          <Button mode="contained" onPress={() => router.push('/next-place' as Href)} style={styles.button}>
+            Следующее место
+          </Button>
+          <Button mode="outlined" onPress={() => router.push('/settings' as Href)} style={styles.button}>
+            Настройки
+          </Button>
+        </View>
       </View>
-      <Snackbar
-        visible={snackbarVisible}
-        onDismiss={hideSnackbar}
-        duration={3000}
-      >
-        Кнопка нажата
-      </Snackbar>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  center: {
+  container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 24,
   },
-  text: {
-    marginBottom: 24,
+  title: {
+    marginBottom: 32,
     textAlign: 'center',
   },
+  buttons: {
+    gap: 16,
+  },
   button: {
-    minWidth: 160,
+    minWidth: 200,
   },
 });
