@@ -18,10 +18,12 @@
     "expo-sqlite": "~16.0.10",
     "expo-status-bar": "~2.0.0",
     "react": "19.1.0",
+    "react-dom": "19.1.0",
     "react-native": "0.81.0",
     "react-native-paper": "^5.12.5",
     "react-native-safe-area-context": "4.14.0",
-    "react-native-screens": "~4.4.0"
+    "react-native-screens": "~4.4.0",
+    "react-native-web": "^0.21.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
