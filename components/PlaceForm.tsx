@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { Alert, View, StyleSheet } from 'react-native';
 import { Button, Switch, Text, TextInput } from 'react-native-paper';
+import * as Location from 'expo-location';
 
 export interface PlaceFormValues {
   name: string;
@@ -25,6 +26,7 @@ export function PlaceForm({ initialValues, submitLabel, submitting, onSubmit }: 
   const [liked, setLiked] = useState(initialValues?.liked ?? false);
   const [lat, setLat] = useState(initialValues?.lat ?? '');
   const [lng, setLng] = useState(initialValues?.lng ?? '');
+  const [locLoading, setLocLoading] = useState(false);
 
   const handleSubmit = () => {
     if (!name.trim()) {
@@ -38,6 +40,24 @@ export function PlaceForm({ initialValues, submitLabel, submitting, onSubmit }: 
       lat: lat.trim(),
       lng: lng.trim(),
     });
+  };
+
+  const handleUseCurrentLocation = async () => {
+    try {
+      setLocLoading(true);
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Геолокация', 'Разрешение на доступ к геолокации не предоставлено.');
+        return;
+      }
+      const position = await Location.getCurrentPositionAsync({});
+      setLat(String(position.coords.latitude));
+      setLng(String(position.coords.longitude));
+    } catch (e) {
+      Alert.alert('Геолокация', 'Не удалось получить текущее местоположение.');
+    } finally {
+      setLocLoading(false);
+    }
   };
 
   return (
@@ -67,25 +87,33 @@ export function PlaceForm({ initialValues, submitLabel, submitting, onSubmit }: 
         <Switch value={liked} onValueChange={setLiked} />
       </View>
       <View style={styles.coordsRow}>
-      <TextInput
-        label="Широта (Decimal Degrees)"
-        value={lat}
-        onChangeText={setLat}
-        style={[styles.input, styles.coordInput]}
-        mode="outlined"
-        keyboardType="numeric"
-        placeholder="55.752220"
-      />
-      <TextInput
-        label="Долгота (Decimal Degrees)"
-        value={lng}
-        onChangeText={setLng}
-        style={[styles.input, styles.coordInput]}
-        mode="outlined"
-        keyboardType="numeric"
-        placeholder="37.615560"
-      />
+        <TextInput
+          label="Широта (Decimal Degrees)"
+          value={lat}
+          onChangeText={setLat}
+          style={[styles.input, styles.coordInput]}
+          mode="outlined"
+          keyboardType="numeric"
+          placeholder="55.752220"
+        />
+        <TextInput
+          label="Долгота (Decimal Degrees)"
+          value={lng}
+          onChangeText={setLng}
+          style={[styles.input, styles.coordInput]}
+          mode="outlined"
+          keyboardType="numeric"
+          placeholder="37.615560"
+        />
       </View>
+      <Button
+        mode="text"
+        onPress={handleUseCurrentLocation}
+        disabled={locLoading}
+        loading={locLoading}
+      >
+        Использовать текущее местоположение
+      </Button>
       <Button
         mode="contained"
         onPress={handleSubmit}
