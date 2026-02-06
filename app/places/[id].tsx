@@ -85,6 +85,15 @@ export default function PlaceDetailsScreen() {
     }
   };
 
+  const formatCoordinates = (lat: number | null, lng: number | null): string => {
+    if (lat == null || lng == null) return 'не заданы';
+    const latAbs = Math.abs(lat).toFixed(6);
+    const lngAbs = Math.abs(lng).toFixed(6);
+    const latHemisphere = lat >= 0 ? 'N' : 'S';
+    const lngHemisphere = lng >= 0 ? 'E' : 'W';
+    return `${latAbs}° ${latHemisphere}, ${lngAbs}° ${lngHemisphere}`;
+  };
+
   const openInMaps = () => {
     if (!place || place.lat == null || place.lng == null) {
       Alert.alert('Нет координат', 'Для этого места не заданы координаты.');
@@ -152,12 +161,7 @@ export default function PlaceDetailsScreen() {
               {place.visitlater ? 'Запланировано к посещению' : 'Посещено или без статуса'}
             </Text>
             <Text style={styles.field}>Избранное: {place.liked ? 'Да' : 'Нет'}</Text>
-            <Text style={styles.field}>
-              Координаты:{' '}
-              {place.lat != null && place.lng != null
-                ? `${place.lat.toFixed(6)}, ${place.lng.toFixed(6)}`
-                : 'не заданы'}
-            </Text>
+            <Text style={styles.field}>Координаты: {formatCoordinates(place.lat, place.lng)}</Text>
           </Card.Content>
         </Card>
 

@@ -67,22 +67,24 @@ export function PlaceForm({ initialValues, submitLabel, submitting, onSubmit }: 
         <Switch value={liked} onValueChange={setLiked} />
       </View>
       <View style={styles.coordsRow}>
-        <TextInput
-          label="Широта (lat)"
-          value={lat}
-          onChangeText={setLat}
-          style={[styles.input, styles.coordInput]}
-          mode="outlined"
-          keyboardType="numeric"
-        />
-        <TextInput
-          label="Долгота (lng)"
-          value={lng}
-          onChangeText={setLng}
-          style={[styles.input, styles.coordInput]}
-          mode="outlined"
-          keyboardType="numeric"
-        />
+      <TextInput
+        label="Широта (Decimal Degrees)"
+        value={lat}
+        onChangeText={setLat}
+        style={[styles.input, styles.coordInput]}
+        mode="outlined"
+        keyboardType="numeric"
+        placeholder="55.752220"
+      />
+      <TextInput
+        label="Долгота (Decimal Degrees)"
+        value={lng}
+        onChangeText={setLng}
+        style={[styles.input, styles.coordInput]}
+        mode="outlined"
+        keyboardType="numeric"
+        placeholder="37.615560"
+      />
       </View>
       <Button
         mode="contained"
