@@ -1,9 +1,11 @@
 import { useRouter } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
-import { Appbar, List, Text } from 'react-native-paper';
+import { Appbar, List, SegmentedButtons, Text } from 'react-native-paper';
+import { useThemeMode } from '../providers/ThemeProvider';
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { themeMode, setThemeMode } = useThemeMode();
   return (
     <>
       <Appbar.Header>
@@ -17,9 +19,19 @@ export default function SettingsScreen() {
         <List.Section>
           <List.Item
             title="Тема приложения"
-            description="Используется системная тема. Переключатель светлой/тёмной темы будет добавлен позже."
+            description="Светлая или тёмная тема. В тёмной теме фоновое изображение отключено."
             left={(props) => <List.Icon {...props} icon="theme-light-dark" />}
           />
+          <View style={styles.themeSelector}>
+            <SegmentedButtons
+              value={themeMode}
+              onValueChange={(v) => setThemeMode(v as 'light' | 'dark')}
+              buttons={[
+                { value: 'light', label: 'Светлая' },
+                { value: 'dark', label: 'Тёмная' },
+              ]}
+            />
+          </View>
           <List.Item
             title="Единицы расстояния"
             description="Километры (смена единиц будет реализована в следующей версии)."
@@ -49,5 +61,9 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     marginBottom: 4,
+  },
+  themeSelector: {
+    marginHorizontal: 16,
+    marginBottom: 8,
   },
 });
