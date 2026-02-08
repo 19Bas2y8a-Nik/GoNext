@@ -9,8 +9,15 @@ import { DatabaseProvider } from '../providers/DatabaseProvider';
 import { ThemeProvider, useThemeMode } from '../providers/ThemeProvider';
 
 function AppContent() {
-  const { isDark } = useThemeMode();
-  const theme = isDark ? MD3DarkTheme : DefaultTheme;
+  const { isDark, primaryColor } = useThemeMode();
+  const baseTheme = isDark ? MD3DarkTheme : DefaultTheme;
+  const theme = {
+    ...baseTheme,
+    colors: {
+      ...baseTheme.colors,
+      primary: primaryColor,
+    },
+  };
   const content = (
     <Stack
       screenOptions={{

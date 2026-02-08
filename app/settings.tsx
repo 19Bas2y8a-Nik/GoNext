@@ -1,11 +1,22 @@
 import { useRouter } from 'expo-router';
-import { View, StyleSheet } from 'react-native';
-import { Appbar, List, SegmentedButtons, Text } from 'react-native-paper';
-import { useThemeMode } from '../providers/ThemeProvider';
+import { Pressable, View, StyleSheet } from 'react-native';
+import {
+  Appbar,
+  List,
+  SegmentedButtons,
+  Text,
+  useTheme,
+} from 'react-native-paper';
+import {
+  useThemeMode,
+  PRIMARY_COLORS,
+} from '../providers/ThemeProvider';
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { themeMode, setThemeMode } = useThemeMode();
+  const theme = useTheme();
+  const { themeMode, setThemeMode, primaryColor, setPrimaryColor } =
+    useThemeMode();
   return (
     <>
       <Appbar.Header>
@@ -31,6 +42,27 @@ export default function SettingsScreen() {
                 { value: 'dark', label: 'Тёмная' },
               ]}
             />
+          </View>
+          <List.Item
+            title="Основной цвет"
+            description="Цвет кнопок, ссылок и акцентов интерфейса."
+            left={(props) => <List.Icon {...props} icon="palette-outline" />}
+          />
+          <View style={styles.colorCircles}>
+            {PRIMARY_COLORS.map((color) => (
+              <Pressable
+                key={color}
+                onPress={() => setPrimaryColor(color)}
+                style={[
+                  styles.colorCircle,
+                  { backgroundColor: color },
+                  primaryColor === color && {
+                    borderColor: theme.colors.outline,
+                    borderWidth: 3,
+                  },
+                ]}
+              />
+            ))}
           </View>
           <List.Item
             title="Единицы расстояния"
@@ -65,5 +97,19 @@ const styles = StyleSheet.create({
   themeSelector: {
     marginHorizontal: 16,
     marginBottom: 8,
+  },
+  colorCircles: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  colorCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: 'transparent',
   },
 });
