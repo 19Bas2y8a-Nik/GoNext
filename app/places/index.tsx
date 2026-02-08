@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter, type Href } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, FlatList } from 'react-native';
 import { Appbar, FAB, List, Text, ActivityIndicator } from 'react-native-paper';
 import type { Place } from '../../lib/types';
@@ -7,6 +8,7 @@ import { usePlaceRepository } from '../../lib/repository';
 
 export default function PlacesScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const placeRepo = usePlaceRepository();
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +45,7 @@ export default function PlacesScreen() {
     <>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title="Места" />
+        <Appbar.Content title={t('places.title')} />
       </Appbar.Header>
       <View style={styles.container}>
         {loading ? (
@@ -52,9 +54,9 @@ export default function PlacesScreen() {
           </View>
         ) : places.length === 0 ? (
           <View style={styles.center}>
-            <Text style={styles.emptyText}>Пока нет ни одного места.</Text>
-            <Text style={styles.emptyText}>Нажмите кнопку ниже, чтобы добавить первое место.</Text>
-            <FAB style={styles.fabInline} icon="plus" label="Добавить место" onPress={goToNewPlace} />
+            <Text style={styles.emptyText}>{t('places.empty')}</Text>
+            <Text style={styles.emptyText}>{t('places.emptyHint')}</Text>
+            <FAB style={styles.fabInline} icon="plus" label={t('common.addPlace')} onPress={goToNewPlace} />
           </View>
         ) : (
           <FlatList

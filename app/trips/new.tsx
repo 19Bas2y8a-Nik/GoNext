@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Alert, View, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Appbar, Checkbox, List, Text, ActivityIndicator, Divider } from 'react-native-paper';
 import { TripForm, type TripFormValues } from '../../components/TripForm';
 import type { Place } from '../../lib/types';
@@ -8,6 +9,7 @@ import { usePlaceRepository, useTripPlaceRepository, useTripRepository } from '.
 
 export default function NewTripScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const placeRepo = usePlaceRepository();
   const tripRepo = useTripRepository();
   const tripPlaceRepo = useTripPlaceRepository();
@@ -67,7 +69,7 @@ export default function NewTripScreen() {
 
       router.replace(`/trips/${tripId}`);
     } catch (e) {
-      Alert.alert('Ошибка', 'Не удалось сохранить поездку. Попробуйте ещё раз.');
+      Alert.alert(t('errors.error'), t('errors.saveTripFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -77,15 +79,15 @@ export default function NewTripScreen() {
     <>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title="Новая поездка" />
+        <Appbar.Content title={t('trips.new')} />
       </Appbar.Header>
       <ScrollView contentContainerStyle={styles.content}>
-        <TripForm submitLabel="Сохранить поездку" submitting={submitting} onSubmit={handleSubmit} />
+        <TripForm submitLabel={t('trips.saveTrip')} submitting={submitting} onSubmit={handleSubmit} />
 
         <Divider style={styles.divider} />
 
         <Text variant="titleMedium" style={styles.sectionTitle}>
-          Места поездки
+          {t('trips.tripPlaces')}
         </Text>
         {loadingPlaces ? (
           <View style={styles.center}>
@@ -93,7 +95,7 @@ export default function NewTripScreen() {
           </View>
         ) : places.length === 0 ? (
           <Text style={styles.emptyText}>
-            У вас пока нет мест. Сначала добавьте несколько мест на экране «Места».
+            {t('trips.noPlacesHint')}
           </Text>
         ) : (
           <View>

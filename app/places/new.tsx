@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
 import { useRouter, type Href } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Appbar } from 'react-native-paper';
 import { usePlaceRepository } from '../../lib/repository';
 import { PlaceForm, type PlaceFormValues } from '../../components/PlaceForm';
 
 export default function NewPlaceScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const placeRepo = usePlaceRepository();
   const [submitting, setSubmitting] = useState(false);
 
@@ -25,7 +27,7 @@ export default function NewPlaceScreen() {
       });
       router.replace(`/places/${id}` as Href);
     } catch (e) {
-      Alert.alert('Ошибка', 'Не удалось сохранить место. Попробуйте ещё раз.');
+      Alert.alert(t('errors.error'), t('errors.savePlaceFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -35,9 +37,9 @@ export default function NewPlaceScreen() {
     <>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title="Новое место" />
+        <Appbar.Content title={t('places.new')} />
       </Appbar.Header>
-      <PlaceForm submitLabel="Сохранить место" submitting={submitting} onSubmit={handleSubmit} />
+      <PlaceForm submitLabel={t('places.savePlace')} submitting={submitting} onSubmit={handleSubmit} />
     </>
   );
 }

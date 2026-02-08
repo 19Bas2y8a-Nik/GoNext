@@ -10,6 +10,7 @@ import {
   Pressable,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Appbar, Button, Card, Text, ActivityIndicator, IconButton } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
@@ -20,6 +21,7 @@ import { PlaceForm, type PlaceFormValues } from '../../components/PlaceForm';
 export default function PlaceDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useTranslation();
   const placeRepo = usePlaceRepository();
   const photoRepo = usePhotoRepository();
   const [place, setPlace] = useState<Place | null>(null);
@@ -83,10 +85,10 @@ export default function PlaceDetailsScreen() {
 
   const handleDelete = () => {
     if (!place) return;
-    Alert.alert('Удалить место', 'Вы уверены, что хотите удалить это место?', [
-      { text: 'Отмена', style: 'cancel' },
+    Alert.alert(t('places.deleteTitle'), t('places.deleteConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Удалить',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           try {
@@ -107,7 +109,7 @@ export default function PlaceDetailsScreen() {
             await placeRepo.delete(place.id);
             router.replace('/places' as Href);
           } catch {
-            Alert.alert('Ошибка', 'Не удалось удалить место. Попробуйте ещё раз.');
+            Alert.alert(t('errors.error'), t('errors.deletePlaceFailed'));
           }
         },
       },
@@ -132,14 +134,14 @@ export default function PlaceDetailsScreen() {
       setPlace(updated);
       setEditing(false);
     } catch {
-      Alert.alert('Ошибка', 'Не удалось сохранить изменения. Попробуйте ещё раз.');
+      Alert.alert(t('errors.error'), t('errors.saveChangesFailed'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const formatCoordinates = (lat: number | null, lng: number | null): string => {
-    if (lat == null || lng == null) return 'не заданы';
+    if (lat == null || lng == null) return t('places.coordsNotSet');
     const latAbs = Math.abs(lat).toFixed(6);
     const lngAbs = Math.abs(lng).toFixed(6);
     const latHemisphere = lat >= 0 ? 'N' : 'S';
@@ -187,7 +189,7 @@ export default function PlaceDetailsScreen() {
       };
       setPhotos((prev) => [newPhoto, ...prev]);
     } catch {
-      Alert.alert('Ошибка', 'Не удалось добавить фото. Попробуйте ещё раз.');
+      Alert.alert(t('errors.error'), t('errors.addPhotoFailed'));
     }
   };
 
@@ -206,13 +208,13 @@ export default function PlaceDetailsScreen() {
         setPreviewPhoto(null);
       }
     } catch {
-      Alert.alert('Ошибка', 'Не удалось удалить фото.');
+      Alert.alert(t('errors.error'), t('errors.deletePhotoFailed'));
     }
   };
 
   const openInMaps = () => {
     if (!place || place.lat == null || place.lng == null) {
-      Alert.alert('Нет координат', 'Для этого места не заданы координаты.');
+      Alert.alert(t('errors.noCoords'), t('errors.noCoordsDescription'));
       return;
     }
     const url = `https://maps.google.com/?q=${place.lat},${place.lng}`;
@@ -239,7 +241,7 @@ export default function PlaceDetailsScreen() {
     if (!place) {
       return (
         <View style={styles.center}>
-          <Text>Место не найдено.</Text>
+          <Text>{t('places.notFound')}</Text>
         </View>
       );
     }
@@ -247,7 +249,7 @@ export default function PlaceDetailsScreen() {
     if (editing) {
       return (
         <PlaceForm
-          submitLabel="Сохранить изменения"
+          submitLabel={t('places.saveChanges')}
           submitting={submitting}
           initialValues={{
             name: place.name,
@@ -270,20 +272,20 @@ export default function PlaceDetailsScreen() {
             {place.description ? (
               <Text style={styles.paragraph}>{place.description}</Text>
             ) : (
-              <Text style={styles.paragraphMuted}>Описание не задано.</Text>
+              <Text style={styles.paragraphMuted}>{t('places.descriptionNotSet')}</Text>
             )}
             <Text style={styles.field}>
-              Статус:{' '}
-              {place.visitlater ? 'Запланировано к посещению' : 'Посещено или без статуса'}
+              {t('places.status')}:{' '}
+              {place.visitlater ? t('places.statusVisitLater') : t('places.statusVisited')}
             </Text>
-            <Text style={styles.field}>Избранное: {place.liked ? 'Да' : 'Нет'}</Text>
-            <Text style={styles.field}>Координаты: {formatCoordinates(place.lat, place.lng)}</Text>
+            <Text style={styles.field}>{t('places.favorite')}: {place.liked ? t('common.yes') : t('common.no')}</Text>
+            <Text style={styles.field}>{t('places.coordinates')}: {formatCoordinates(place.lat, place.lng)}</Text>
           </Card.Content>
         </Card>
 
         <View style={styles.section}>
           <Text variant="titleMedium" style={styles.sectionTitle}>
-            Фотографии
+            {t('common.photos')}
           </Text>
           {photosLoading ? (
             <View style={styles.photosRow}>
@@ -291,7 +293,7 @@ export default function PlaceDetailsScreen() {
             </View>
           ) : photos.length === 0 ? (
             <Text style={styles.paragraphMuted}>
-              Пока нет фотографий. Нажмите «Добавить фото», чтобы прикрепить первое изображение.
+              {t('places.noPhotos')}
             </Text>
           ) : (
             <ScrollView horizontal contentContainerStyle={styles.photosRow} showsHorizontalScrollIndicator={false}>
@@ -311,19 +313,19 @@ export default function PlaceDetailsScreen() {
             </ScrollView>
           )}
           <Button mode="contained-tonal" style={styles.addPhotoButton} onPress={handleAddPhoto}>
-            Добавить фото
+            {t('common.addPhoto')}
           </Button>
         </View>
 
         <View style={styles.buttons}>
           <Button mode="contained" onPress={openInMaps} disabled={place.lat == null || place.lng == null}>
-            Открыть на карте
+            {t('common.openOnMap')}
           </Button>
           <Button mode="outlined" onPress={startEditing}>
-            Редактировать
+            {t('common.edit')}
           </Button>
           <Button mode="text" textColor="red" onPress={handleDelete}>
-            Удалить место
+            {t('places.deleteTitle')}
           </Button>
         </View>
       </View>
@@ -334,7 +336,7 @@ export default function PlaceDetailsScreen() {
     <>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title={place?.name ?? 'Место'} />
+        <Appbar.Content title={place?.name ?? t('places.place')} />
         {editing && <Appbar.Action icon="close" onPress={stopEditing} />}
       </Appbar.Header>
       {renderContent()}

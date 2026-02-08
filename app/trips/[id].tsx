@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Linking, ScrollView, StyleSheet, View, Image, Modal, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Appbar,
@@ -40,7 +41,11 @@ function formatDate(date: string | null): string | null {
   return date || null;
 }
 
-function getTripStatusLabel(trip: Trip | null, places: TripPlaceWithPlace[]): string {
+function getTripStatusLabel(
+  trip: Trip | null,
+  places: TripPlaceWithPlace[],
+  t: (key: string) => string,
+): string {
   if (!trip) return '';
   const now = new Date();
   const start = trip.startDate ? new Date(trip.startDate) : null;
@@ -49,23 +54,24 @@ function getTripStatusLabel(trip: Trip | null, places: TripPlaceWithPlace[]): st
   const allVisited = places.length > 0 && places.every((p) => p.visited);
 
   if (!start && !end) {
-    return anyVisited ? 'Дневник поездки' : 'План поездки';
+    return anyVisited ? t('trips.diary') : t('trips.plan');
   }
 
   if (end && now > end) {
-    return allVisited ? 'Дневник поездки (завершена)' : 'Дневник поездки (есть непосещённые места)';
+    return allVisited ? t('trips.diaryCompleted') : t('trips.diaryUnvisited');
   }
 
   if (start && now < start) {
-    return 'План поездки';
+    return t('trips.plan');
   }
 
-  return anyVisited ? 'Дневник поездки' : 'План поездки';
+  return anyVisited ? t('trips.diary') : t('trips.plan');
 }
 
 export default function TripDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useTranslation();
   const tripRepo = useTripRepository();
   const tripPlaceRepo = useTripPlaceRepository();
   const placeRepo = usePlaceRepository();
@@ -145,7 +151,7 @@ export default function TripDetailsScreen() {
     };
   }, [tripId, tripRepo, tripPlaceRepo, placeRepo]);
 
-  const statusLabel = useMemo(() => getTripStatusLabel(trip, places), [trip, places]);
+  const statusLabel = useMemo(() => getTripStatusLabel(trip, places, t), [trip, places, t]);
 
   const movePlace = async (index: number, direction: -1 | 1) => {
     const newIndex = index + direction;
@@ -172,7 +178,7 @@ export default function TripDetailsScreen() {
         ),
       );
     } catch {
-      Alert.alert('Ошибка', 'Не удалось обновить статус места.');
+      Alert.alert(t('errors.error'), t('errors.updateStatusFailed'));
     } finally {
       setUpdating(false);
     }
@@ -186,7 +192,7 @@ export default function TripDetailsScreen() {
         prev.map((p) => (p.id === item.id ? { ...p, notes } : p)),
       );
     } catch {
-      Alert.alert('Ошибка', 'Не удалось сохранить заметки.');
+      Alert.alert(t('errors.error'), t('errors.saveNotesFailed'));
     } finally {
       setUpdating(false);
     }
@@ -194,7 +200,7 @@ export default function TripDetailsScreen() {
 
   const openPlaceOnMap = (item: TripPlaceWithPlaceAndPhotos) => {
     if (!item.place || item.place.lat == null || item.place.lng == null) {
-      Alert.alert('Нет координат', 'Для этого места не заданы координаты.');
+      Alert.alert(t('errors.noCoords'), t('errors.noCoordsDescription'));
       return;
     }
     const url = `https://maps.google.com/?q=${item.place.lat},${item.place.lng}`;
@@ -249,7 +255,7 @@ export default function TripDetailsScreen() {
         ),
       );
     } catch {
-      Alert.alert('Ошибка', 'Не удалось добавить фото. Попробуйте ещё раз.');
+      Alert.alert(t('errors.error'), t('errors.addPhotoFailed'));
     }
   };
 
@@ -274,16 +280,16 @@ export default function TripDetailsScreen() {
         setPreviewPhotoUri(null);
       }
     } catch {
-      Alert.alert('Ошибка', 'Не удалось удалить фото.');
+      Alert.alert(t('errors.error'), t('errors.deletePhotoFailed'));
     }
   };
 
   const deleteTrip = () => {
     if (!trip) return;
-    Alert.alert('Удалить поездку', 'Вы уверены, что хотите удалить эту поездку?', [
-      { text: 'Отмена', style: 'cancel' },
+    Alert.alert(t('trips.deleteTitle'), t('trips.deleteConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Удалить',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           try {
@@ -304,7 +310,7 @@ export default function TripDetailsScreen() {
             await tripRepo.delete(trip.id);
             router.replace('/trips' as Href);
           } catch {
-            Alert.alert('Ошибка', 'Не удалось удалить поездку.');
+            Alert.alert(t('errors.error'), t('errors.deleteTripFailed'));
           }
         },
       },
@@ -316,7 +322,7 @@ export default function TripDetailsScreen() {
       <>
         <Appbar.Header>
           <Appbar.BackAction onPress={() => router.back()} />
-          <Appbar.Content title="Поездка" />
+          <Appbar.Content title={t('trips.trip')} />
         </Appbar.Header>
         <View style={styles.center}>
           <ActivityIndicator />
@@ -330,10 +336,10 @@ export default function TripDetailsScreen() {
       <>
         <Appbar.Header>
           <Appbar.BackAction onPress={() => router.back()} />
-          <Appbar.Content title="Поездка" />
+          <Appbar.Content title={t('trips.trip')} />
         </Appbar.Header>
         <View style={styles.center}>
-          <Text>Поездка не найдена.</Text>
+          <Text>{t('trips.notFound')}</Text>
         </View>
       </>
     );
@@ -353,12 +359,12 @@ export default function TripDetailsScreen() {
             {trip.description ? (
               <Text style={styles.paragraph}>{trip.description}</Text>
             ) : (
-              <Text style={styles.paragraphMuted}>Описание не задано.</Text>
+              <Text style={styles.paragraphMuted}>{t('places.descriptionNotSet')}</Text>
             )}
             <Text style={styles.field}>
-              Даты: {formatDate(trip.startDate) || '—'} — {formatDate(trip.endDate) || '—'}
+              {t('trips.dates')}: {formatDate(trip.startDate) || '—'} — {formatDate(trip.endDate) || '—'}
             </Text>
-            <Text style={styles.field}>Текущая поездка: {trip.current ? 'Да' : 'Нет'}</Text>
+            <Text style={styles.field}>{t('trips.currentTrip')}: {trip.current ? t('common.yes') : t('common.no')}</Text>
             {statusLabel ? (
               <Chip style={styles.chip} compact>
                 {statusLabel}
@@ -369,21 +375,21 @@ export default function TripDetailsScreen() {
 
         <View style={styles.section}>
           <Text variant="titleMedium" style={styles.sectionTitle}>
-            Маршрут
+            {t('trips.route')}
           </Text>
           {places.length === 0 ? (
             <Text style={styles.paragraphMuted}>
-              В эту поездку пока не добавлены места.
+              {t('trips.routeEmpty')}
             </Text>
           ) : (
             places.map((item, index) => (
               <Card key={item.id} style={styles.placeCard}>
                 <Card.Title
-                  title={`${index + 1}. ${item.place?.name ?? 'Место удалено'}`}
+                  title={`${index + 1}. ${item.place?.name ?? t('places.placeRemoved')}`}
                   subtitle={
                     item.place?.description
                       ? item.place.description
-                      : 'Описание не задано.'
+                      : t('places.descriptionNotSet')
                   }
                 />
                 <Card.Content>
@@ -393,7 +399,7 @@ export default function TripDetailsScreen() {
                       icon={item.visited ? 'check-circle' : 'clock-outline'}
                       onPress={() => void toggleVisited(item)}
                     >
-                      {item.visited ? 'Посещено' : 'Не посещено'}
+                      {item.visited ? t('trips.visited') : t('trips.notVisited')}
                     </Chip>
                     <View style={styles.orderButtons}>
                       <Button
@@ -413,11 +419,11 @@ export default function TripDetailsScreen() {
                     </View>
                   </View>
                   <Text style={styles.field}>
-                    Дата посещения:{' '}
-                    {item.visitDate ? formatDate(item.visitDate) : 'не задана'}
+                    {t('trips.visitDate')}:{' '}
+                    {item.visitDate ? formatDate(item.visitDate) : t('trips.visitDateNotSet')}
                   </Text>
                   <TextInput
-                    label="Заметки"
+                    label={t('trips.notes')}
                     value={item.notes ?? ''}
                     onChangeText={(text) => void updateNotes(item, text)}
                     mode="outlined"
@@ -430,21 +436,21 @@ export default function TripDetailsScreen() {
                       onPress={() => openPlaceOnMap(item)}
                       disabled={!item.place || item.place.lat == null || item.place.lng == null}
                     >
-                      Открыть на карте
+                      {t('common.openOnMap')}
                     </Button>
                     <Button
                       mode="outlined"
                       onPress={() => openPlaceCard(item)}
                       disabled={!item.place}
                     >
-                      Карточка места
+                      {t('common.placeCard')}
                     </Button>
                   </View>
                   <View style={styles.photosSection}>
-                    <Text style={styles.photosTitle}>Фотографии</Text>
+                    <Text style={styles.photosTitle}>{t('common.photos')}</Text>
                     {item.photos.length === 0 ? (
                       <Text style={styles.paragraphMuted}>
-                        Пока нет фотографий для этой точки маршрута.
+                        {t('trips.noPhotosForPoint')}
                       </Text>
                     ) : (
                       <ScrollView
@@ -472,7 +478,7 @@ export default function TripDetailsScreen() {
                       style={styles.addPhotoButton}
                       onPress={() => void handleAddPhoto(item)}
                     >
-                      Добавить фото
+                      {t('common.addPhoto')}
                     </Button>
                   </View>
                 </Card.Content>

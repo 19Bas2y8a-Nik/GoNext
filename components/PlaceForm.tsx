@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Alert, View, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Button, Switch, Text, TextInput } from 'react-native-paper';
 import * as Location from 'expo-location';
 
@@ -20,6 +21,7 @@ interface PlaceFormProps {
 }
 
 export function PlaceForm({ initialValues, submitLabel, submitting, onSubmit }: PlaceFormProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState(initialValues?.name ?? '');
   const [description, setDescription] = useState(initialValues?.description ?? '');
   const [visitlater, setVisitlater] = useState(initialValues?.visitlater ?? true);
@@ -47,14 +49,14 @@ export function PlaceForm({ initialValues, submitLabel, submitting, onSubmit }: 
       setLocLoading(true);
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Геолокация', 'Разрешение на доступ к геолокации не предоставлено.');
+        Alert.alert(t('errors.geolocation'), t('errors.locationDenied'));
         return;
       }
       const position = await Location.getCurrentPositionAsync({});
       setLat(String(position.coords.latitude));
       setLng(String(position.coords.longitude));
     } catch (e) {
-      Alert.alert('Геолокация', 'Не удалось получить текущее местоположение.');
+      Alert.alert(t('errors.geolocation'), t('errors.locationFailed'));
     } finally {
       setLocLoading(false);
     }
@@ -63,7 +65,7 @@ export function PlaceForm({ initialValues, submitLabel, submitting, onSubmit }: 
   return (
     <View style={styles.form}>
       <TextInput
-        label="Название"
+        label={t('places.name')}
         value={name}
         onChangeText={setName}
         style={styles.input}
@@ -71,7 +73,7 @@ export function PlaceForm({ initialValues, submitLabel, submitting, onSubmit }: 
         autoFocus
       />
       <TextInput
-        label="Описание"
+        label={t('common.description')}
         value={description}
         onChangeText={setDescription}
         style={styles.input}
@@ -79,16 +81,16 @@ export function PlaceForm({ initialValues, submitLabel, submitting, onSubmit }: 
         multiline
       />
       <View style={styles.row}>
-        <Text style={styles.rowLabel}>Посетить позже</Text>
+        <Text style={styles.rowLabel}>{t('places.visitLater')}</Text>
         <Switch value={visitlater} onValueChange={setVisitlater} />
       </View>
       <View style={styles.row}>
-        <Text style={styles.rowLabel}>Избранное</Text>
+        <Text style={styles.rowLabel}>{t('places.favorite')}</Text>
         <Switch value={liked} onValueChange={setLiked} />
       </View>
       <View style={styles.coordsRow}>
         <TextInput
-          label="Широта (Decimal Degrees)"
+          label={t('places.latitude')}
           value={lat}
           onChangeText={setLat}
           style={[styles.input, styles.coordInput]}
@@ -97,7 +99,7 @@ export function PlaceForm({ initialValues, submitLabel, submitting, onSubmit }: 
           placeholder="55.752220"
         />
         <TextInput
-          label="Долгота (Decimal Degrees)"
+          label={t('places.longitude')}
           value={lng}
           onChangeText={setLng}
           style={[styles.input, styles.coordInput]}
@@ -112,7 +114,7 @@ export function PlaceForm({ initialValues, submitLabel, submitting, onSubmit }: 
         disabled={locLoading}
         loading={locLoading}
       >
-        Использовать текущее местоположение
+        {t('places.useCurrentLocation')}
       </Button>
       <Button
         mode="contained"

@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useRouter, type Href } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, FlatList } from 'react-native';
 import { Appbar, FAB, List, Text, ActivityIndicator, Chip } from 'react-native-paper';
 import type { Trip } from '../../lib/types';
 import { useTripRepository } from '../../lib/repository';
 
-function formatDateRange(startDate: string | null, endDate: string | null): string {
-  if (!startDate && !endDate) return 'Даты не указаны';
-  if (startDate && !endDate) return `с ${startDate}`;
-  if (!startDate && endDate) return `до ${endDate}`;
-  return `${startDate} — ${endDate}`;
-}
-
 export default function TripsScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const tripRepo = useTripRepository();
+
+  const formatDateRange = (startDate: string | null, endDate: string | null): string => {
+    if (!startDate && !endDate) return t('dates.notSet');
+    if (startDate && !endDate) return t('dates.from', { date: startDate });
+    if (!startDate && endDate) return t('dates.to', { date: endDate });
+    return t('dates.range', { start: startDate, end: endDate });
+  };
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,7 +52,7 @@ export default function TripsScreen() {
     <>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title="Поездки" />
+        <Appbar.Content title={t('trips.title')} />
       </Appbar.Header>
       <View style={styles.container}>
         {loading ? (
@@ -59,9 +61,9 @@ export default function TripsScreen() {
           </View>
         ) : trips.length === 0 ? (
           <View style={styles.center}>
-            <Text style={styles.emptyText}>Пока нет ни одной поездки.</Text>
-            <Text style={styles.emptyText}>Нажмите кнопку ниже, чтобы создать первую поездку.</Text>
-            <FAB style={styles.fabInline} icon="plus" label="Создать поездку" onPress={goToNewTrip} />
+            <Text style={styles.emptyText}>{t('trips.empty')}</Text>
+            <Text style={styles.emptyText}>{t('trips.emptyHint')}</Text>
+            <FAB style={styles.fabInline} icon="plus" label={t('common.createTrip')} onPress={goToNewTrip} />
           </View>
         ) : (
           <FlatList
@@ -75,7 +77,7 @@ export default function TripsScreen() {
                 onPress={() => openTrip(item.id)}
                 left={(props) => <List.Icon {...props} icon="map" />}
                 right={(props) =>
-                  item.current ? <Chip {...props} compact>Текущая</Chip> : undefined
+                  item.current ? <Chip {...props} compact>{t('trips.current')}</Chip> : undefined
                 }
               />
             )}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Button, Switch, Text, TextInput } from 'react-native-paper';
 
 export interface TripFormValues {
@@ -18,6 +19,7 @@ interface TripFormProps {
 }
 
 export function TripForm({ initialValues, submitLabel, submitting, onSubmit }: TripFormProps) {
+  const { t } = useTranslation();
   const [title, setTitle] = useState(initialValues?.title ?? '');
   const [description, setDescription] = useState(initialValues?.description ?? '');
   const [startDate, setStartDate] = useState(initialValues?.startDate ?? '');
@@ -38,7 +40,7 @@ export function TripForm({ initialValues, submitLabel, submitting, onSubmit }: T
   return (
     <View style={styles.form}>
       <TextInput
-        label="Название поездки"
+        label={t('trips.tripTitle')}
         value={title}
         onChangeText={setTitle}
         style={styles.input}
@@ -46,7 +48,7 @@ export function TripForm({ initialValues, submitLabel, submitting, onSubmit }: T
         autoFocus
       />
       <TextInput
-        label="Описание"
+        label={t('common.description')}
         value={description}
         onChangeText={setDescription}
         style={styles.input}
@@ -54,7 +56,7 @@ export function TripForm({ initialValues, submitLabel, submitting, onSubmit }: T
         multiline
       />
       <View style={styles.row}>
-        <Text style={styles.rowLabel}>Дата начала (YYYY-MM-DD)</Text>
+        <Text style={styles.rowLabel}>{t('trips.startDate')}</Text>
         <TextInput
           value={startDate}
           onChangeText={setStartDate}
@@ -64,7 +66,7 @@ export function TripForm({ initialValues, submitLabel, submitting, onSubmit }: T
         />
       </View>
       <View style={styles.row}>
-        <Text style={styles.rowLabel}>Дата окончания (YYYY-MM-DD)</Text>
+        <Text style={styles.rowLabel}>{t('trips.endDate')}</Text>
         <TextInput
           value={endDate}
           onChangeText={setEndDate}
@@ -74,7 +76,7 @@ export function TripForm({ initialValues, submitLabel, submitting, onSubmit }: T
         />
       </View>
       <View style={styles.row}>
-        <Text style={styles.rowLabel}>Сделать текущей поездкой</Text>
+        <Text style={styles.rowLabel}>{t('trips.makeCurrent')}</Text>
         <Switch value={current} onValueChange={setCurrent} />
       </View>
       <Button

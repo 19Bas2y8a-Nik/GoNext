@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter, type Href } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Appbar, Button, Card, Text } from 'react-native-paper';
 import { Linking, Platform, StyleSheet, View } from 'react-native';
 import type { Trip, TripPlace } from '../lib/types';
@@ -17,6 +18,7 @@ type NextTripPlace = TripPlace & {
 
 export default function NextPlaceScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const tripRepo = useTripRepository();
   const tripPlaceRepo = useTripPlaceRepository();
 
@@ -65,7 +67,7 @@ export default function NextPlaceScreen() {
   }, [tripRepo, tripPlaceRepo]);
 
   const formatCoordinates = (lat: number | null, lng: number | null): string => {
-    if (lat == null || lng == null) return 'не заданы';
+    if (lat == null || lng == null) return t('places.coordsNotSet');
     const latAbs = Math.abs(lat).toFixed(6);
     const lngAbs = Math.abs(lng).toFixed(6);
     const latHemisphere = lat >= 0 ? 'N' : 'S';
@@ -124,11 +126,10 @@ export default function NextPlaceScreen() {
       return (
         <View style={styles.center}>
           <Text style={styles.message}>
-            Нет активной поездки. Отметьте одну из поездок как текущую, чтобы увидеть следующее
-            место.
+            {t('nextPlace.noActiveTrip')}
           </Text>
           <Button mode="contained" onPress={goToTrips}>
-            Перейти к списку поездок
+            {t('nextPlace.goToTrips')}
           </Button>
         </View>
       );
@@ -138,13 +139,13 @@ export default function NextPlaceScreen() {
       return (
         <View style={styles.center}>
           <Text style={styles.message}>
-            Для активной поездки «{trip.title}» нет следующего места.
+            {t('nextPlace.noNextPlace', { tripTitle: trip.title })}
           </Text>
           <Text style={styles.messageSecondary}>
-            Либо все места уже посещены, либо в поездку ещё не добавлены места.
+            {t('nextPlace.noNextPlaceHint')}
           </Text>
           <Button mode="contained" onPress={goToTripDetails}>
-            Открыть поездку
+            {t('nextPlace.openTrip')}
           </Button>
         </View>
       );
@@ -160,10 +161,10 @@ export default function NextPlaceScreen() {
             {place.description ? (
               <Text style={styles.paragraph}>{place.description}</Text>
             ) : (
-              <Text style={styles.paragraphMuted}>Описание не задано.</Text>
+              <Text style={styles.paragraphMuted}>{t('places.descriptionNotSet')}</Text>
             )}
             <Text style={styles.field}>
-              Координаты: {formatCoordinates(place.lat, place.lng)}
+              {t('places.coordinates')}: {formatCoordinates(place.lat, place.lng)}
             </Text>
           </Card.Content>
         </Card>
@@ -174,20 +175,20 @@ export default function NextPlaceScreen() {
             onPress={openInMaps}
             disabled={place.lat == null || place.lng == null}
           >
-            Открыть на карте
+            {t('common.openOnMap')}
           </Button>
           <Button
             mode="contained-tonal"
             onPress={openInNavigator}
             disabled={place.lat == null || place.lng == null}
           >
-            Открыть в навигаторе
+            {t('common.openInNavigator')}
           </Button>
           <Button mode="outlined" onPress={goToPlaceDetails}>
-            Карточка места
+            {t('common.placeCard')}
           </Button>
           <Button mode="text" onPress={goToTripDetails}>
-            Открыть поездку
+            {t('nextPlace.openTrip')}
           </Button>
         </View>
       </View>
@@ -198,7 +199,7 @@ export default function NextPlaceScreen() {
     <>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title="Следующее место" />
+        <Appbar.Content title={t('nextPlace.title')} />
       </Appbar.Header>
       {renderContent()}
     </>
