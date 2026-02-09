@@ -7,6 +7,7 @@
     "scheme": "gonext",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "icon": "./assets/backgrounds/gonext-bg.png",
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
@@ -17,6 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/backgrounds/gonext-bg.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.gonext.app"
@@ -27,10 +29,26 @@
     },
     "plugins": [
       "expo-router",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "faeea4de-981b-4c48-86bc-7e4b41e073f2"
+      }
     }
   }
 }
